@@ -1,65 +1,73 @@
 from mpmath import mp
+mp.dps = 20
 
-mp.dps = 50
-
-def mfp(f,n,tol=mp.mpf('1e-10'),max_iter=10000):
+def mfp(f,n,tol=mp.mpf(f'1e-{mp.dps-10}'),max_iter=10000):
     step_size = mp.mpf('0.01')
-    int_a=mp.mpf('0')
-    int_b=int_a+step_size
+    interval_a=mp.mpf('0') # intervalo a
+    interval_b=interval_a+step_size # intervalo b
     f_roots = []
-    lst_update = ''
     
-    def skip_int():
-        nonlocal int_a, int_b
-        int_a=int_b
-        int_b += step_size
-
-    for nb in range(n):
-        i=0
-        init_int_a=int_a
-        while f(int_a)*f(int_b)>0 and 0<=i<max_iter:
-            skip_int()
-            i+=1
-        
-        if i==max_iter:
-            print(f'Sem raízes no intervalo de {init_int_a} - {int_b}')
-
-            break
-        
-        if f(int_b) == 0:
-            f_roots.append(int_b)
-            skip_int()
-            continue
-        elif f(int_a) == 0:
-            f_roots.append(int_a)
-            skip_int()
-            continue
-
-        a=int_a
-        b=int_b
-        fa = f(a)
-        fb = f(b)
+    
+    def skip_int(): # pular intervalo em distancia = step_size 
+        nonlocal interval_a, interval_b
+        interval_a=interval_b
+        interval_b += step_size
+    def add_root(r):
+        skip_int()
+        f_roots.append(r)
+    def aproximate(a,b):
+        print(a, b)
+        aprox_index = 0
+        fa=f(a)
+        fb=f(b)
+        lst_update = ''
         while abs(b-a)>tol:
-            xn = ((a*fb-b*fa)/(fb - fa))
+            xn = (a*fb-b*fa)/(fb - fa)
             fxn = f(xn)
             if fa*fxn<0:
+                #print('x1')
                 if lst_update=='b':
                     fa/=2
                 b=xn
                 fb = fxn
                 lst_update = 'b'
             else:
-                #print('bb')
+                #print('x2')
                 if lst_update=='a':
                     fb/=2
                 a=xn
                 fa = fxn
                 lst_update = 'a'
- 
-        skip_int()
-        f_roots.append(xn)
-    
-    print("\nraizes:\n\n", [str(x) for x in f_roots], "\n")
+            aprox_index+=1
+        #print('x')
+        return xn, aprox_index
 
-mfp(lambda x: x**4-2*x**3+3*x-10, 3) # funcao anonima, numero de raizes 
+
+    for nb in range(n):
+        i=0 # tentativas de achar um intervalo que contenha raiz
+        init_interval_a=interval_a # distancia {a} inicial em que tenta buscar intervalo com proxima raiz
+        while f(interval_a)*f(interval_b)>0 and 0<=i<max_iter:
+            skip_int()
+            i+=1
+        
+        if i==max_iter:
+            print(f'No roots found on interval: {init_interval_a} - {interval_b}')
+            break
+        print(f(interval_b),f(interval_a))
+        if f(interval_b) == 0:
+            add_root(interval_b)
+            continue
+        elif f(interval_a) == 0:
+            add_root(interval_a)
+            continue
+
+        xn, aprox_iter = aproximate(interval_a, interval_b)
+        # numero de iterações para aproximar, após achar o intervalo que tem raiz
+ 
+        print(f'For the root number {nb+1}, was need {aprox_iter} iterations: {xn}')
+        add_root(xn)
+    
+    print("\nRoots:\n\n", [str(x) for x in f_roots], "\n")
+
+mfp(lambda x: x-4, 7) # funcao anonima, numero de raizes 
 
