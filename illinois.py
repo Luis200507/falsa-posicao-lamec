@@ -1,7 +1,6 @@
 from mpmath import mp
-mp.dps = 20
 
-def mfp(f,n,tol=mp.mpf(f'1e-{mp.dps-10}'),max_iter=10000):
+def mfp(f,n,tol=mp.mpf(f'1e-6'),max_iter=10000):
     step_size = mp.mpf('0.01')
     interval_a=mp.mpf('0') # intervalo a
     interval_b=interval_a+step_size # intervalo b
@@ -53,7 +52,6 @@ def mfp(f,n,tol=mp.mpf(f'1e-{mp.dps-10}'),max_iter=10000):
         if i==max_iter:
             print(f'No roots found on interval: {init_interval_a} - {interval_b}')
             break
-        print(f(interval_b),f(interval_a))
         if f(interval_b) == 0:
             add_root(interval_b)
             continue
@@ -69,5 +67,5 @@ def mfp(f,n,tol=mp.mpf(f'1e-{mp.dps-10}'),max_iter=10000):
     
     print("\nRoots:\n\n", [str(x) for x in f_roots], "\n")
 
-mfp(lambda x: x-4, 7) # funcao anonima, numero de raizes 
-
+mfp(lambda x: (mp.cosh(x)*mp.cos(x))-1,3) # funcao anonima, numero de raizes 
+    
